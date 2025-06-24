@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>VAA Market</title>
+  <meta charset="UTF-8">
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #007BFF;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    #secondOutput {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>VAA Market</h1>
+
+  <table id="outputTable">
+    <thead>
+      <tr>
+        <th>Tên sản phẩm</th>
+        <th>Số lượng</th>
+        <th>Giá</th>
+      </tr>
+    </thead>
+    <tbody id="outputBody">
+      <!-- Dữ liệu sẽ được thêm vào đây -->
+    </tbody>
+  </table>
+
+  <div id="secondOutput" style="margin-top: 20px;"></div>
+
+  <button onclick="confirmOrder()" style="margin-top: 20px; padding: 10px 20px; font-size: 16px; background-color: green; color: white; border: none; border-radius: 5px; cursor: pointer;">
+    ✅ Xác nhận đơn hàng
+  </button>
+
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyCCXNOxuuvC0KFP0HFEgnxDYvQfeh45EBM",
+      authDomain: "cd12-e9366.firebaseapp.com",
+      databaseURL: "https://cd12-e9366-default-rtdb.firebaseio.com",
+      projectId: "cd12-e9366",
+      storageBucket: "cd12-e9366.appspot.com",
+      messagingSenderId: "26527435072",
+      appId: "1:26527435072:web:16658a2ae71daa0d7292a5",
+      measurementId: "G-N0W0J8BYV6"
+    };
+    firebase.initializeApp(firebaseConfig);
+    var database = firebase.database();
+
+    var dataRef = database.ref('/Cart/Order/Shopping/items');
+    var totalRef = database.ref('/Cart/Order/Shopping/total');
+    var confirmRef = database.ref('/Cart/Order/Shopping/confirmed');
+
+    // Hiển thị dữ liệu
+    dataRef.on('value', function(snapshot) {
+      var data = snapshot.val();
+      var outputBody = document.getElementById('outputBody');
+      outputBody.innerHTML = '';
+      if (data) {
+        alert("Có đơn hàng mới");
+        Object.keys(data).forEach(function(key) {
+          var item = data[key];
+          var row = document.createElement('tr');
+
+          var nameCell = document.createElement('td');
+          nameCell.textContent = item.name || 'Không có tên';
+          row.appendChild(nameCell);
+
+          var quantityCell = document.createElement('td');
+          quantityCell.textContent = item.quantity || 0;
+          row.appendChild(quantityCell);
+
+          var priceCell = document.createElement('td');
+          priceCell.textContent = item.price || 0;
+          row.appendChild(priceCell);
+
+          outputBody.appendChild(row);
+        });
+      }
+    });
+
+    totalRef.on('value', function(snapshot) {
+      var total = snapshot.val();
+      document.getElementById('secondOutput').innerHTML = 'Tổng đơn hàng: <strong>' + total + '</strong>';
+    });
+
+    // Hàm xử lý khi nhấn nút Xác nhận
+    function confirmOrder() {
+      // 1. Xóa dữ liệu
+      confirmRef.set(true)
+      // dataRef.remove()
+      //   .then(() => totalRef.remove())
+      //   .then(() => {
+      //     // 2. Đặt confirmed = true
+      //     return confirmRef.set(true);
+      //   })
+        .then(() => {
+          document.getElementById('outputBody').innerHTML = '';
+          document.getElementById('secondOutput').innerHTML = '';
+          alert("✅ Đơn hàng đã được xác nhận!");
+        })
+        .catch(error => {
+          console.error("Lỗi khi xác nhận đơn hàng: ", error);
+          alert("❌ Có lỗi xảy ra khi xác nhận đơn hàng.");
+        });
+    }
+  </script>
+</body>
+</html>
